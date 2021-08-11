@@ -21,7 +21,7 @@ class VolumeSkill(MycroftSkill):
         volume = int(percent)
         volume = min(100, volume)
         volume = max(0, volume)
-        volume_percent(volume)
+        AlsaControl().volume_percent(volume)
         play_wav(self.volume_sound)
 
     def increase_volume(self, volume_change=None):
