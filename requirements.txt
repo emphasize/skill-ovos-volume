@@ -1,0 +1,2 @@
+pyalsaaudio
+ovos_utils
