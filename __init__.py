@@ -18,30 +18,24 @@ class VolumeSkill(MycroftSkill):
         self.set_volume(50)
 
     def set_volume(self, percent=None):
-        self._volume = int(percent)
-        if self._volume > 100:
-            self._volume = 100
-        if self._volume < 0:
-            self._volume = 0
-        AlsaControl().set_volume_percent(self._volume)
+        volume = int(percent)
+        volume = min(100, volume)
+        volume = max(0, volume)
+        volume_percent(volume)
         play_wav(self.volume_sound)
 
     def increase_volume(self, volume_change=None):
-        if volume_change:
-            volume_change = volume_change
-            AlsaControl().increase_volume(volume_change)
-        else:
+        if not volume_change:
             volume_change = 15
-            AlsaControl().increase_volume(volume_change)
+        AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
 
     def decrease_volume(self, volume_change=None):
-        if volume_change:
-            volume_change = 0 - volume_change
-            AlsaControl().increase_volume(volume_change)
-        else:
+        if not volume_change:
             volume_change = -15
-            AlsaControl().increase_volume(volume_change)
+        if volume_change > 0:
+            volume_change = 0 - volume_change
+        AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
 
     @intent_handler(IntentBuilder("change_volume").require('change_volume'))
@@ -89,8 +83,8 @@ class VolumeSkill(MycroftSkill):
 
     @intent_handler(IntentBuilder("current_volume").require('current_volume'))
     def handle_query_volume(self, message):
-        level = AlsaControl().get_volume()
-        self.speak_dialog('volume.is', data={'volume': round(level)})
+        volume = AlsaControl().get_volume()
+        self.speak_dialog('volume.is', data={'volume': volume})
 
 
 def create_skill():
