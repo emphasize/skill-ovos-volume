@@ -4,7 +4,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util import play_wav
 from mycroft.util.parse import extract_number
-from ovos_utils.audio.alsa import AlsaControl
+from ovos_utils.sound.alsa import AlsaControl
 
 
 class VolumeSkill(MycroftSkill):
