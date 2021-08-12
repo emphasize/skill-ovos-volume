@@ -1,7 +1,7 @@
 from os.path import dirname, join
 
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import MycroftSkill, intent_handler
+from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handler
 from mycroft.util import play_wav
 from mycroft.util.parse import extract_number
 from ovos_utils.sound.alsa import AlsaControl
