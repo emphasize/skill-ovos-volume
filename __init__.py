@@ -12,10 +12,26 @@ class VolumeSkill(MycroftSkill):
         super(VolumeSkill, self).__init__("VolumeSkill")
         self.volume_sound = join(dirname(__file__), "blop-mark-diangelo.wav")
 
+    # bus api
+    def initialize(self):
+        self.add_event("mycroft.volume.get", self.handle_volume_request)
+        self.add_event("mycroft.volume.set", self.handle_volume_change)
+
+    def handle_volume_request(self, message):
+        self.bus.emit(message.response({"percent": self.get_volume() / 100}))
+
+    def handle_volume_change(self, message):
+        percent = message.data["percent"] * 100
+        self.set_volume(percent)
+
+    # volume control
     def get_intro_message(self):
-        # just pretend this method is called "on first boot"
+        # just pretend this method is called "on_first_boot"
         # will only run once when the skill is loaded for the first time
         self.set_volume(50)
+
+    def get_volume(self):
+        return AlsaControl().get_volume_percent()
 
     def set_volume(self, percent=None):
         volume = int(percent)
@@ -38,6 +54,8 @@ class VolumeSkill(MycroftSkill):
         AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
 
+
+    # intents
     @intent_handler(IntentBuilder("change_volume").require('change_volume'))
     def handle_change_volume_intent(self, message):
         utterance = message.data['utterance']
