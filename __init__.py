@@ -18,7 +18,8 @@ class VolumeSkill(MycroftSkill):
         self.add_event("mycroft.volume.set", self.handle_volume_change)
 
     def handle_volume_request(self, message):
-        self.bus.emit(message.response({"percent": self.get_volume() / 100}))
+        percent = self.get_volume() / 100
+        self.bus.emit(message.response({"percent": percent}))
 
     def handle_volume_change(self, message):
         percent = message.data["percent"] * 100
