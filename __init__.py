@@ -5,6 +5,7 @@ from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handle
 from mycroft.util import play_wav, normalize
 from mycroft.util.parse import extract_number
 from ovos_utils.sound.alsa import AlsaControl
+from mycroft_bus_client import Message
 
 
 class VolumeSkill(MycroftSkill):
@@ -41,6 +42,11 @@ class VolumeSkill(MycroftSkill):
         AlsaControl().set_volume_percent(volume)
         play_wav(self.volume_sound)
 
+        # report change to GUI
+        percent = volume / 100
+        self.handle_volume_request(
+            Message("mycroft.volume.get", {"percent": percent}))
+
     def increase_volume(self, volume_change=None):
         if not volume_change:
             volume_change = 15
@@ -54,7 +60,6 @@ class VolumeSkill(MycroftSkill):
             volume_change = 0 - volume_change
         AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
-
 
     # intents
     @intent_handler(IntentBuilder("change_volume").require('change_volume'))
