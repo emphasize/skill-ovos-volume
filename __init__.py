@@ -17,6 +17,7 @@ class VolumeSkill(MycroftSkill):
     def initialize(self):
         self.add_event("mycroft.volume.get", self.handle_volume_request)
         self.add_event("mycroft.volume.set", self.handle_volume_change)
+        self.handle_volume_request(Message("mycroft.volume.get"))
 
     def handle_volume_request(self, message):
         percent = self.get_volume() / 100
@@ -67,7 +68,7 @@ class VolumeSkill(MycroftSkill):
         utterance = message.data['utterance']
         volume_change = extract_number(normalize(utterance))
         self.set_volume(volume_change)
-        if volume_change == 100:
+        if volume_change >= 100:
             self.speak_dialog('max.volume')
         else:
             self.speak_dialog('set.volume.percent',
