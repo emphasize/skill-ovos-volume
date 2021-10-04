@@ -17,6 +17,9 @@ class VolumeSkill(MycroftSkill):
     def initialize(self):
         self.add_event("mycroft.volume.get", self.handle_volume_request)
         self.add_event("mycroft.volume.set", self.handle_volume_change)
+        self.add_event("mycroft.volume.set.gui",
+                       self.handle_volume_change_gui)
+
         self.handle_volume_request(Message("mycroft.volume.get"))
 
     def handle_volume_request(self, message):
@@ -27,6 +30,10 @@ class VolumeSkill(MycroftSkill):
         percent = message.data["percent"] * 100
         self.set_volume(percent)
 
+    def handle_volume_change_gui(self, message):
+        percent = message.data["percent"] * 100
+        self.set_volume(percent, set_by_gui=True)
+
     # volume control
     def get_intro_message(self):
         # just pretend this method is called "on_first_boot"
@@ -36,7 +43,7 @@ class VolumeSkill(MycroftSkill):
     def get_volume(self):
         return AlsaControl().get_volume_percent()
 
-    def set_volume(self, percent=None):
+    def set_volume(self, percent=None, set_by_gui=False):
         volume = int(percent)
         volume = min(100, volume)
         volume = max(0, volume)
@@ -44,15 +51,17 @@ class VolumeSkill(MycroftSkill):
         play_wav(self.volume_sound)
 
         # report change to GUI
-        percent = volume / 100
-        self.handle_volume_request(
-            Message("mycroft.volume.get", {"percent": percent}))
+        if not set_by_gui:
+            percent = volume / 100
+            self.handle_volume_request(
+                Message("mycroft.volume.get", {"percent": percent}))
 
     def increase_volume(self, volume_change=None):
         if not volume_change:
             volume_change = 15
         AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
+        self.handle_volume_request(Message("mycroft.volume.get"))
 
     def decrease_volume(self, volume_change=None):
         if not volume_change:
@@ -61,6 +70,7 @@ class VolumeSkill(MycroftSkill):
             volume_change = 0 - volume_change
         AlsaControl().increase_volume(volume_change)
         play_wav(self.volume_sound)
+        self.handle_volume_request(Message("mycroft.volume.get"))
 
     # intents
     @intent_handler(IntentBuilder("change_volume").require('change_volume'))
