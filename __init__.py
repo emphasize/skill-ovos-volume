@@ -19,7 +19,6 @@ class VolumeSkill(MycroftSkill):
         self.add_event("mycroft.volume.set", self.handle_volume_change)
         self.add_event("mycroft.volume.set.gui",
                        self.handle_volume_change_gui)
-
         self.handle_volume_request(Message("mycroft.volume.get"))
 
     def handle_volume_request(self, message):
@@ -131,7 +130,7 @@ class VolumeSkill(MycroftSkill):
         self.bus.emit(Message("mycroft.volume.get").response({"percent" : volume / 100}))
 
     @intent_file_handler('toggle_mute.intent')
-    def handle_unmute_intent(self, message):
+    def handle_toggle_unmute_intent(self, message):
         alsa = AlsaControl()
         alsa.toggle_mute()
         muted = alsa.is_muted() 
