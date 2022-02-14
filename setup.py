@@ -20,7 +20,7 @@ setup(
     package_data={'ovos_skill_volume': ["locale/*"]},
     packages=['ovos_skill_volume'],
     include_package_data=True,
-    install_requires=["ovos-plugin-manager>=0.0.2", "pyalsaaudio==0.8.2"],
+    install_requires=["pyalsaaudio==0.8.2"],
     keywords='ovos skill plugin',
     entry_points={'ovos.plugin.skill': PLUGIN_ENTRY_POINT}
 )
