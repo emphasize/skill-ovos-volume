@@ -51,7 +51,7 @@ class VolumeSkill(MycroftSkill):
         )
         self.speak_dialog(
             "volume.set.percent",
-            data={"level": max(0, int(volume - volume_change))},
+            data={"level": max(MIN_VOLUME, int(volume - volume_change))},
         )
 
     @intent_handler(
@@ -68,7 +68,7 @@ class VolumeSkill(MycroftSkill):
             )
             self.speak_dialog(
                 "volume.set.percent",
-                data={"level": min(100, int(volume + volume_change))},
+                data={"level": min(MAX_VOLUME, int(volume + volume_change))},
             )
         else:
             self.speak_dialog("volume.max.already")
