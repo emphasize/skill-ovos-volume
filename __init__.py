@@ -7,6 +7,13 @@ MIN_VOLUME = 0
 MAX_VOLUME = 100
 
 
+def amount_validator(response):
+    amount = extract_number(normalize(response))
+    if amount:
+        return MIN_VOLUME <= amount <= MAX_VOLUME
+    return None
+
+
 class VolumeSkill(MycroftSkill):
     def _query_volume(self, message):
         response = self.bus.wait_for_response(message.forward("mycroft.volume.get"))
@@ -16,22 +23,16 @@ class VolumeSkill(MycroftSkill):
             self.speak_dialog("error.get.volume")
             raise TimeoutError("Failed to get volume")
 
-    def _amount_validator(response):
-        amount = extract_number(normalize(response))
-        if amount:
-            return MIN_VOLUME <= amount <= MAX_VOLUME
-        return None
-
     # intents
     @intent_handler(IntentBuilder("change_volume").require("change").require("volume"))
     def handle_change_volume_intent(self, message):
         volume_change = extract_number(normalize(message.data["utterance"]))
         if not volume_change:
             response = self.get_response(
-                "volume.change.amount", validator=self._amount_validator
+                "volume.change.amount", validator=amount_validator
             )
             volume_change = extract_number(normalize(response))
-        elif volume_change >= 100:
+        if volume_change >= 100:
             self.speak_dialog("volume.max")
         else:
             self.speak_dialog("volume.set.percent", data={"level": int(volume_change)})
