@@ -3,30 +3,41 @@ from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handle
 from mycroft.util import normalize
 from mycroft.util.parse import extract_number
 
+MIN_VOLUME = 0
 MAX_VOLUME = 100
 
 
 class VolumeSkill(MycroftSkill):
     def _query_volume(self, message):
-        response = self.bus.wait_for_response(message.forward("volume.get"))
+        response = self.bus.wait_for_response(message.forward("mycroft.volume.get"))
         if response:
-            return response.data["percent"] * 100
+            return int(response.data["percent"] * 100)
         else:
             self.speak_dialog("error.get.volume")
             raise TimeoutError("Failed to get volume")
 
+    def _amount_validator(response):
+        amount = extract_number(normalize(response))
+        if amount:
+            return MIN_VOLUME <= amount <= MAX_VOLUME
+        return None
+
     # intents
     @intent_handler(IntentBuilder("change_volume").require("change").require("volume"))
     def handle_change_volume_intent(self, message):
-        utterance = message.data["utterance"]
-        volume_change = extract_number(normalize(utterance))
+        volume_change = extract_number(normalize(message.data["utterance"]))
+        if not volume_change:
+            response = self.get_response(
+                "volume.change.amount", validator=self._amount_validator
+            )
+            volume_change = extract_number(normalize(response))
+        elif volume_change >= 100:
+            self.speak_dialog("volume.max")
+        else:
+            self.speak_dialog("volume.set.percent", data={"level": int(volume_change)})
         self.bus.emit(
             message.forward("mycroft.volume.set", {"percent": volume_change / 100})
         )
-        if volume_change >= 100:
-            self.speak_dialog("volume.max")
-        else:
-            self.speak_dialog("volume.set.percent", data={"level": volume_change})
 
     @intent_handler(
         IntentBuilder("less_volume").require("quieter").optionally("volume")
@@ -39,7 +50,7 @@ class VolumeSkill(MycroftSkill):
         )
         self.speak_dialog(
             "volume.set.percent",
-            data={"level": max(0, volume - volume_change)},
+            data={"level": max(0, int(volume - volume_change))},
         )
 
     @intent_handler(
@@ -56,7 +67,7 @@ class VolumeSkill(MycroftSkill):
             )
             self.speak_dialog(
                 "volume.set.percent",
-                data={"level": min(100, volume + volume_change)},
+                data={"level": min(100, int(volume + volume_change))},
             )
         else:
             self.speak_dialog("volume.max.already")
